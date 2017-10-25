@@ -292,6 +292,7 @@ bool cpu_in_idle(unsigned long pc)
 
 void cpu_startup_entry(enum cpuhp_state state)
 {
+	int cpu = smp_processor_id();
 	/*
 	 * This #ifdef needs to die, but it's too late in the cycle to
 	 * make this generic (arm and sh have never invoked the canary
