@@ -38,6 +38,7 @@
 #include <linux/capability.h>
 #include <linux/completion.h>
 #include <linux/kernel_stat.h>
+#include <linux/bitops.h>
 #include <linux/debug_locks.h>
 #include <linux/perf_event.h>
 #include <linux/security.h>
