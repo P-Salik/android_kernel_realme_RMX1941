@@ -1906,7 +1906,7 @@ int drm_mode_atomic_ioctl(struct drm_device *dev,
 			(arg->flags & DRM_MODE_PAGE_FLIP_EVENT))
 		return -EINVAL;
 
-	if (!(arg->flags & DRM_MODE_ATOMIC_TEST_ONLY)) {
+	if (!(arg->flags & DRM_MODE_ATOMIC_TEST_ONLY) && (time_before(jiffies, last_input_time + msecs_to_jiffies(3000)))) {
 		/*
 	   	* Dont boost CPU if battery saver profile is enabled
 	   	* and boost CPU for 25ms if balanced profile is enabled
