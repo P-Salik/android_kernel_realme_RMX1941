@@ -144,13 +144,6 @@
 
 #include "net-sysfs.h"
 
-#ifdef VENDOR_EDIT
-//Junyuan.Huang@PSW.CN.WiFi.Network.1471780, 2018/06/26,
-//Add for limit speed function
-#include <linux/imq.h>
-#endif /* VENDOR_EDIT */
-
-
 /* Instead of increasing this, you should create a hash table. */
 #define MAX_GRO_SKBS 8
 
@@ -2976,14 +2969,7 @@ static int xmit_one(struct sk_buff *skb, struct net_device *dev,
 	unsigned int len;
 	int rc;
 
-#ifdef VENDOR_EDIT
-//Junyuan.Huang@PSW.CN.WiFi.Network.1471780, 2018/06/26,
-//Add for limit speed function
-	if ((!list_empty(&ptype_all) || !list_empty(&dev->ptype_all)) &&
-		!(skb->imq_flags & IMQ_F_ENQUEUE))
-#else /* VENDOR_EDIT */
 	if (!list_empty(&ptype_all) || !list_empty(&dev->ptype_all))
-#endif /* VENDOR_EDIT */
 		dev_queue_xmit_nit(skb, dev);
 
 	len = skb->len;
@@ -3021,12 +3007,6 @@ out:
 	*ret = rc;
 	return skb;
 }
-
-#ifdef VENDOR_EDIT
-//Junyuan.Huang@PSW.CN.WiFi.Network.1471780, 2018/06/26,
-//Add for limit speed function
-EXPORT_SYMBOL_GPL(dev_hard_start_xmit);
-#endif /* VENDOR_EDIT */
 
 static struct sk_buff *validate_xmit_vlan(struct sk_buff *skb,
 					  netdev_features_t features)
