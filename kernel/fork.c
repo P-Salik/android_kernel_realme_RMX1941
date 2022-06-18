@@ -1990,6 +1990,7 @@ struct task_struct *fork_idle(int cpu)
 	return task;
 }
 
+extern int kp_active_mode(void);
 /*
  *  Ok, this is the main fork-routine.
  *
@@ -2009,6 +2010,19 @@ long _do_fork(unsigned long clone_flags,
 	unsigned long long start, end, dur;
 
 	start = sched_clock();
+
+	if (task_is_zygote(current)) {
+	  /*
+	   * Dont boost CPU if battery saver profile is enabled
+	   * and boost CPU for 25ms if balanced profile is enabled
+	   */
+	  if (kp_active_mode() == 3 || kp_active_mode() == 0) {
+	    cpu_input_boost_kick_max(50);
+	  } else if (kp_active_mode() == 2) {
+	    cpu_input_boost_kick_max(25);
+	  }
+	}
+
 	/*
 	 * Determine whether and which event to report to ptracer.  When
 	 * called from kernel_thread or CLONE_UNTRACED is explicitly
