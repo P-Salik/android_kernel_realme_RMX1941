@@ -751,7 +751,7 @@ mountpoint:
 	}
 
 	if (!new)
-		new = kmalloc(sizeof(struct mountpoint), GFP_KERNEL);
+		new = kmalloc(sizeof(struct mountpoint), GFP_NOFS);
 	if (!new)
 		return ERR_PTR(-ENOMEM);
 
@@ -1437,7 +1437,7 @@ static void namespace_unlock(void)
 	if (likely(hlist_empty(&head)))
 		return;
 
-	synchronize_rcu();
+	synchronize_rcu_expedited();
 
 	group_pin_kill(&head);
 }

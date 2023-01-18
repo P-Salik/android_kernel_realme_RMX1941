@@ -81,7 +81,7 @@
  *   dentry1->d_lock
  *     dentry2->d_lock
  */
-int sysctl_vfs_cache_pressure __read_mostly = 100;
+int sysctl_vfs_cache_pressure __read_mostly = 50;
 EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
 
 __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
@@ -1621,7 +1621,11 @@ struct dentry *__d_alloc(struct super_block *sb, const struct qstr *name)
 		dname = p->name;
 		if (IS_ENABLED(CONFIG_DCACHE_WORD_ACCESS))
 			kasan_unpoison_shadow(dname,
-				round_up(name->len + 1,	sizeof(unsigned long)));
+#if defined(CONFIG_KASAN) && defined(CONFIG_KASAN_ENHANCEMENT)
+				round_up(name->len + 1,	16));
+#else
+				round_up(name->len + 1, sizeof(unsigned long)));
+#endif
 	} else  {
 		dname = dentry->d_iname;
 	}	

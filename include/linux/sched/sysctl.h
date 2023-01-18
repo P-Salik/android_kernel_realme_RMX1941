@@ -9,6 +9,14 @@ extern int sysctl_hung_task_warnings;
 extern int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
 					 void __user *buffer,
 					 size_t *lenp, loff_t *ppos);
+#ifdef VENDOR_EDIT
+/* fanhui@PhoneSW.BSP, 2016/02/02, DeathHealer, record the hung task killing */
+extern char sysctl_hung_task_oppo_kill[];
+#endif
+#if defined(VENDOR_EDIT) && defined(CONFIG_DEATH_HEALER)
+/* Wen.Luo@BSP.Kernel.Stability, 2019/01/12, DeathHealer , Foreground background optimization,change max io count */
+extern int sysctl_hung_task_maxiowait_count;
+#endif
 #else
 /* Avoid need for ifdefs elsewhere in the code */
 enum { sysctl_hung_task_timeout_secs = 0 };
@@ -26,6 +34,8 @@ extern unsigned int sysctl_sched_use_walt_task_util;
 extern unsigned int sysctl_sched_walt_init_task_load_pct;
 extern unsigned int sysctl_sched_walt_cpu_high_irqload;
 #endif
+extern unsigned int sysctl_sched_isolation_hint_enable;
+extern unsigned int sysctl_sched_rotation_enable;
 
 enum sched_tunable_scaling {
 	SCHED_TUNABLESCALING_NONE,
@@ -73,6 +83,14 @@ static inline unsigned int get_sysctl_sched_cfs_boost(void)
 {
 	return sysctl_sched_cfs_boost;
 }
+
+#ifdef CONFIG_CGROUP_SCHEDTUNE
+extern int stune_task_threshold;
+extern int sched_stune_task_threshold_handler(struct ctl_table *table,
+					int write, void __user *buffer,
+					size_t *length, loff_t *ppos);
+#endif
+
 #else
 static inline unsigned int get_sysctl_sched_cfs_boost(void)
 {

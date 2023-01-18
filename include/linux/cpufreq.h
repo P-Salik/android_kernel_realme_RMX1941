@@ -910,6 +910,10 @@ static inline bool policy_has_boost_freq(struct cpufreq_policy *policy)
 }
 #endif
 
+#ifdef VENDOR_EDIT
+struct list_head *get_cpufreq_policy_list(void);
+#endif /* VENDOR_EDIT */
+
 /* the following are really really optional */
 extern struct freq_attr cpufreq_freq_attr_scaling_available_freqs;
 extern struct freq_attr cpufreq_freq_attr_scaling_boost_freqs;
@@ -924,6 +928,16 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
 
 struct sched_domain;
 unsigned long cpufreq_scale_freq_capacity(struct sched_domain *sd, int cpu);
+
+/* sched+ gov: */
+extern void arch_scale_set_max_freq(int cpu, unsigned long freq);
+extern void arch_scale_set_min_freq(int cpu, unsigned long freq);
+extern void arch_scale_set_curr_freq(int cpu, unsigned long freq);
+#ifdef CONFIG_CPU_FREQ_GOV_SCHEDPLUS
+extern unsigned int get_sched_cur_freq(int cid);
+#else
+static inline int get_sched_cur_freq(int cid) { return 0; };
+#endif
 unsigned long cpufreq_scale_max_freq_capacity(struct sched_domain *sd, int cpu);
 unsigned long cpufreq_scale_min_freq_capacity(struct sched_domain *sd, int cpu);
 #endif /* _LINUX_CPUFREQ_H */

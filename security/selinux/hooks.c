@@ -1115,7 +1115,10 @@ static int selinux_parse_opts_str(char *options,
 
 	opts->mnt_opts_flags = kcalloc(NUM_SEL_MNT_OPTS, sizeof(int), GFP_ATOMIC);
 	if (!opts->mnt_opts_flags) {
+	#ifndef VENDOR_EDIT
+	/*xing.xiong@BSP.Kernel.Stability.1372374, 2018/05/15, Add for memory double free*/
 		kfree(opts->mnt_opts);
+	#endif
 		goto out_err;
 	}
 
@@ -1140,6 +1143,10 @@ static int selinux_parse_opts_str(char *options,
 	return 0;
 
 out_err:
+#ifdef VENDOR_EDIT
+/*xing.xiong@BSP.Kernel.Stability.1372374, 2018/05/15, Add for memory double free*/
+	security_free_mnt_opts(opts);
+#endif
 	kfree(context);
 	kfree(defcontext);
 	kfree(fscontext);

@@ -87,6 +87,16 @@
 int sysctl_tcp_tw_reuse __read_mostly;
 int sysctl_tcp_low_latency __read_mostly;
 
+#ifdef VENDOR_EDIT
+//Asiga@PSW.NW.DATA.2120730, 2019/06/26.
+//Add for classify glink wakeup services.
+#include <net/oppo_nwpower.h>
+atomic_t ipa_wakeup_hook_boot = ATOMIC_INIT(0);
+extern atomic_t ipa_first_msg;
+extern struct work_struct oppo_ipv4_hook_work;
+extern struct oppo_ipv4_hook_struct oppo_ipv4_hook;
+#endif /* VENDOR_EDIT */
+
 #ifdef CONFIG_TCP_MD5SIG
 static int tcp_v4_md5_hash_hdr(char *md5_hash, const struct tcp_md5sig_key *key,
 			       __be32 daddr, __be32 saddr, const struct tcphdr *th);
@@ -1543,7 +1553,7 @@ bool tcp_prequeue(struct sock *sk, struct sk_buff *skb)
 
 		tp->ucopy.memory = 0;
 	} else if (skb_queue_len(&tp->ucopy.prequeue) == 1) {
-		wake_up_interruptible_sync_poll(sk_sleep(sk),
+		wake_up_interruptible_poll(sk_sleep(sk),
 					   POLLIN | POLLRDNORM | POLLRDBAND);
 		if (!inet_csk_ack_scheduled(sk))
 			inet_csk_reset_xmit_timer(sk, ICSK_TIME_DACK,
@@ -1657,6 +1667,17 @@ lookup:
 			       th->dest, &refcounted);
 	if (!sk)
 		goto no_tcp_socket;
+
+#ifdef VENDOR_EDIT
+//Asiga@PSW.NW.DATA.2120730, 2019/06/26.
+//Add for classify glink wakeup services.
+	if (atomic_read(&ipa_wakeup_hook_boot) == 1 && atomic_read(&ipa_first_msg) == 1) {
+		atomic_set(&ipa_first_msg, 2);
+		oppo_ipv4_hook.addr = sk->sk_daddr;
+		oppo_ipv4_hook.uid = sk->sk_uid;
+		schedule_work(&oppo_ipv4_hook_work);
+	}
+#endif /* VENDOR_EDIT */
 
 process:
 	if (sk->sk_state == TCP_TIME_WAIT)
@@ -2480,7 +2501,12 @@ static int __net_init tcp_sk_init(struct net *net)
 	net->ipv4.sysctl_tcp_reordering = TCP_FASTRETRANS_THRESH;
 	net->ipv4.sysctl_tcp_retries1 = TCP_RETR1;
 	net->ipv4.sysctl_tcp_retries2 = TCP_RETR2;
+#ifndef VENDOR_EDIT
+//Yongyao.Song@PSW.NW.DATA.1127822, modify for decrease power
 	net->ipv4.sysctl_tcp_orphan_retries = 0;
+#else
+	net->ipv4.sysctl_tcp_orphan_retries = TCP_ORPHAN_RETRIES;
+#endif /*VENDOR_EDIT*/
 	net->ipv4.sysctl_tcp_fin_timeout = TCP_FIN_TIMEOUT;
 	net->ipv4.sysctl_tcp_notsent_lowat = UINT_MAX;
 

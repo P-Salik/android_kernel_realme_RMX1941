@@ -16,6 +16,7 @@ config ASHMEM
 
 config ANDROID_LOW_MEMORY_KILLER
 	bool "Android Low Memory Killer"
+	depends on !MTK_ENABLE_AGO
 	---help---
 	  Registers processes to be killed when low memory conditions, this is useful
 	  as there is no particular swap space on android.
@@ -42,6 +43,32 @@ config ANDROID_VSOC
 	  a 'cuttlefish' Android image inside QEmu. The driver interacts with
 	  a QEmu ivshmem device. If built as a module, it will be called vsoc.
 
+config SYNC
+    bool "Synchronization framework"
+    default y
+    ---help---
+      This option enables the framework for synchronization between multiple
+      drivers.  Sync implementations can take advantage of hardware
+      synchronization built into devices like GPUs.
+
+config ANDROID_INTF_ALARM_DEV
+	bool "Android alarm driver"
+	depends on RTC_CLASS
+	default n
+	---help---
+	  Provides non-wakeup and rtc backed wakeup alarms based on rtc or
+	  elapsed realtime, and a non-wakeup alarm on the monotonic clock.
+	  Espically for wake up alarm ioctl.
+	  Also exports the alarm interface to user-space.
+
+#ifdef VENDOR_EDIT
+#Kun.Zhou@ROM.Framework, 2019/09/23, add for hans freeze manager
+config OPPO_HANS
+        bool "HANS kernel and HANS native communication channel"
+        default n
+        ---help---
+          Key events (signal/network package/binder) report to HAS native.
+#endif
 source "drivers/staging/android/ion/Kconfig"
 
 source "drivers/staging/android/fiq_debugger/Kconfig"
